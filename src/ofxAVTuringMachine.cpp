@@ -10,6 +10,16 @@ shared_ptr<ofPixels> ofxAVTuringMachine::makePixels(int32_t shape){
     return pix;
 }
 
+//simple audioOut drop-in for convenience
+void ofxAVTuringMachine::audioOut(float * output, int bufferSize, int nChannels){
+    for(size_t i = 0; i<bufferSize; i++){
+        float v = audioStep();
+        for(size_t c=0; c<nChannels; c++){
+            output[nChannels*i+c] = v;
+        }
+    }
+}
+
 //step and convert the scanned symbol to a float on [-.5, .5]
 float ofxAVTuringMachine::audioStep(){
     return float(step())/(1<<bits) - .5;
@@ -49,6 +59,36 @@ uint8_t ofxAVTuringMachine::rand_u8(){
     uint8_t ret = rand();
     return ret>>(8-bits);
     //return ofRandom((1<<bits) + 1);
+}
+
+uint32_t ofxAVTuringMachine::getProgramBytes(){
+    return 3<<(2*bits);
+}
+
+uint8_t* ofxAVTuringMachine::getProgram(){
+    return program;
+}
+
+void ofxAVTuringMachine::setProgram(uint8_t* ptr){
+    program = ptr;
+    program_pix = NULL;
+}
+
+void ofxAVTuringMachine::setProgram(shared_ptr<ofPixels> &pix){
+    if((pix->getWidth())*(pix->getHeight())*(pix->getNumChannels())*(pix->getBytesPerChannel()) < getProgramBytes())
+        cout << "ofxAVTuringMachine error: program pixels too small"<<endl;
+    else{
+        program_pix = pix;
+        program = pix->getData();
+    }
+}
+
+uint8_t* ofxAVTuringMachine::getTape(){
+    return tape;
+}
+
+void ofxAVTuringMachine::setTape(uint8_t* ptr){
+    tape = ptr;
 }
 
 void ofxAVTuringMachine::randomizeState(){

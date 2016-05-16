@@ -4,7 +4,6 @@
 
 class ofxAVTuringMachine{
 public:
-    uint8_t *tape, *program;
     uint32_t index, bits, tape_length, jump_div;
     uint8_t state;
 
@@ -21,5 +20,16 @@ public:
     float audioStep();
     tuple<uint8_t, uint8_t, uint8_t> delta();
     uint32_t getAddress();
+    uint32_t getProgramBytes();
     shared_ptr<ofPixels> makePixels(int32_t shape);
+    uint8_t* getTape();
+    void setTape(uint8_t*);
+    uint8_t* getProgram();
+    void setProgram(uint8_t*);
+    void setProgram(shared_ptr<ofPixels>&);
+    void audioOut(float * output, int bufferSize, int nChannels);
+
+private:
+    shared_ptr<ofPixels> program_pix;
+    uint8_t *tape, *program;
 };
