@@ -15,6 +15,7 @@ public:
     void randomizeState();
     void randomizeIndex();
     void zeroTape();
+    void reset();
     uint8_t rand_u8();
     uint8_t step();
     void tick();

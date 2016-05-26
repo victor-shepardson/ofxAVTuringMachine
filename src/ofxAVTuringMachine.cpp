@@ -122,6 +122,12 @@ void ofxAVTuringMachine::randomizeState(){
     state = rand_u8();
 }
 
+void ofxAVTuringMachine::reset(){
+    zeroTape();
+    index = 0;
+    state = 0;
+}
+
 void ofxAVTuringMachine::randomizeIndex(){
     uint32_t r = RAND_MAX * rand() + rand();
     index = r % tape_length;
