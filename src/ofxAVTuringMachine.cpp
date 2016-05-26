@@ -34,7 +34,7 @@ uint8_t ofxAVTuringMachine::step(){
     auto result = delta();
     state = get<0>(result);
     tape[index] = get<1>(result);
-    uint32_t new_index = index + (int32_t(get<2>(result)) - int32_t(1<<bits)/2)/jump_div;
+    uint32_t new_index = index + (int32_t(get<2>(result)) - (1<<bits-1))/jump_div;
     index = (new_index + tape_length) % tape_length;
     return tape[index];
 }
@@ -43,7 +43,7 @@ void ofxAVTuringMachine::tick(){
     auto result = delta();
     to_state = get<0>(result);
     to_write = get<1>(result);
-    uint32_t new_index = index + (int32_t(get<2>(result)) - int32_t(1<<bits)/2)/jump_div;
+    uint32_t new_index = index + (int32_t(get<2>(result)) - (1<<bits-1))/jump_div;
     to_jump = (new_index + tape_length) % tape_length;
 }
 
@@ -71,9 +71,10 @@ tuple<uint8_t, uint8_t, uint8_t> ofxAVTuringMachine::delta(){
 
 void ofxAVTuringMachine::setCurrentInstruction(tuple<uint8_t, uint8_t, uint8_t> i){
     uint32_t address = getAddress();
-    program[address] = get<0>(i);
-    program[address+1] = get<1>(i);
-    program[address+2] = get<2>(i);
+    uint8_t mask = ((1<<bits)-1);
+    program[address] = mask & get<0>(i);
+    program[address+1] = mask & get<1>(i);
+    program[address+2] = mask & get<2>(i);
 }
 
 //get address of instruction for current state
@@ -84,6 +85,8 @@ uint32_t ofxAVTuringMachine::getAddress(){
 
 uint8_t ofxAVTuringMachine::rand_u8(){
     uint8_t ret = rand();
+    // uint8_t mask = ~((1<<8-bits)-1);
+    // return ret & mask;
     return ret>>(8-bits);
     //return ofRandom((1<<bits) + 1);
 }
