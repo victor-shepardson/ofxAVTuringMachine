@@ -5,7 +5,7 @@
 //return wrapped in a shared_ptr
 shared_ptr<ofPixels> ofxAVTuringMachine::makePixels(int32_t shape){
     int32_t tw = 1<<(bits-shape), th = 1<<(bits+shape);
-    shared_ptr<ofPixels> pix(new ofPixels());
+    shared_ptr<ofPixels> pix = make_shared<ofPixels>();
     pix->setFromExternalPixels(tape, tw, th, 3);
     return pix;
 }
@@ -25,6 +25,10 @@ float ofxAVTuringMachine::audioStep(){
     return float(step())/(1<<bits) - .5;
 }
 
+float ofxAVTuringMachine::audioTock(){
+    return float(tock())/(1<<bits) - .5;
+}
+
 //step the turing machine and return new symbol
 uint8_t ofxAVTuringMachine::step(){
     auto result = delta();
@@ -34,6 +38,22 @@ uint8_t ofxAVTuringMachine::step(){
     index = (new_index + tape_length) % tape_length;
     return tape[index];
 }
+
+void ofxAVTuringMachine::tick(){
+    auto result = delta();
+    to_state = get<0>(result);
+    to_write = get<1>(result);
+    uint32_t new_index = index + (int32_t(get<2>(result)) - int32_t(1<<bits)/2)/jump_div;
+    to_jump = (new_index + tape_length) % tape_length;
+}
+
+uint8_t ofxAVTuringMachine::tock(){
+    state = to_state;
+    tape[index] = to_write;
+    index = to_jump;
+    return tape[index];
+}
+
 //read the program
 tuple<uint8_t, uint8_t, uint8_t> ofxAVTuringMachine::delta(){
     if(!program){
@@ -47,6 +67,13 @@ tuple<uint8_t, uint8_t, uint8_t> ofxAVTuringMachine::delta(){
     new_symbol = program[address+1];
     jump = program[address+2];
     return make_tuple(new_state, new_symbol, jump);
+}
+
+void ofxAVTuringMachine::setCurrentInstruction(tuple<uint8_t, uint8_t, uint8_t> i){
+    uint32_t address = getAddress();
+    program[address] = get<0>(i);
+    program[address+1] = get<1>(i);
+    program[address+2] = get<2>(i);
 }
 
 //get address of instruction for current state
@@ -111,10 +138,13 @@ void ofxAVTuringMachine::randomizeTape(){
 
 void ofxAVTuringMachine::randomizeInstruction(){
     uint32_t address = getAddress();
-    //address %= program_length;
     program[address] = rand_u8();
     program[address+1] = rand_u8();
     program[address+2] = rand_u8();
+    // cout<<"<"
+    //     <<int(program[address])<<", "
+    //     <<int(program[address+1])<<", "
+    //     <<int(program[address+2])<<">"<<endl;
 }
 
 void ofxAVTuringMachine::zeroTape(){

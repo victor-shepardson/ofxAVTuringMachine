@@ -17,6 +17,9 @@ public:
     void zeroTape();
     uint8_t rand_u8();
     uint8_t step();
+    void tick();
+    uint8_t tock();
+    float audioTock();
     float audioStep();
     tuple<uint8_t, uint8_t, uint8_t> delta();
     uint32_t getAddress();
@@ -27,9 +30,13 @@ public:
     uint8_t* getProgram();
     void setProgram(uint8_t*);
     void setProgram(shared_ptr<ofPixels>&);
+    void setCurrentInstruction(tuple<uint8_t, uint8_t, uint8_t>);
     void audioOut(float * output, int bufferSize, int nChannels);
 
 private:
     shared_ptr<ofPixels> program_pix;
     uint8_t *tape, *program;
+
+    uint8_t to_write, to_state;
+    uint32_t to_jump;
 };
